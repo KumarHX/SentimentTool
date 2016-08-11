@@ -90,7 +90,7 @@ ArticleModel = {
 				if (err) throw res.json({"error": err})
 	  		});
 		});
-		res.json({'Success': "Database updated"});
+		res.json({'Success': votePlaced + " on " + legacyId});
 	}
 }
 
