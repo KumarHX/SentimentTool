@@ -1,0 +1,28 @@
+{
+  "name": "sentiment",
+  "version": "1.0.0",
+  "description": "tool analysis",
+  "main": "app.js",
+  "dependencies": {
+    "mysql": "^2.11.1",
+    "pg": "^6.0.4",
+    "express": "^4.14.0",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^3.23.6",
+    "body-parser": "^1.15.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KumarHX/SentimentTool-IGN.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KumarHX/SentimentTool-IGN/issues"
+  },
+  "homepage": "https://github.com/KumarHX/SentimentTool-IGN#readme"
+}
