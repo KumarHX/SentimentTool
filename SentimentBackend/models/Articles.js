@@ -4,7 +4,11 @@ var init = require("./init")
 
 ArticleModel = {
 
-	VoteHandler: function(res, articleId, votePlaced, dateTime, legacyId){
+	voteResults: function(res, articleId){
+
+	},
+
+	voteHandler: function(res, articleId, votePlaced, dateTime, legacyId){
 		function firstQuery(articleId, dateTime, legacyId, value){
 			var first = "";
 			if(value == "Happy")
@@ -26,7 +30,7 @@ ArticleModel = {
 			}
 			else if(value == "Sad")
 			{
-				second = secondSadQuery(articleId, dateTime, legacyId);
+				second = secondSadQuery(legacyId);
 			}
 			return second;
 		}
