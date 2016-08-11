@@ -5,6 +5,18 @@ var init = require("./init")
 ArticleModel = {
 
 	voteResults: function(res, articleId){
+		function query(articleId){
+			return "SELECT positive_votes, negative_votes, agg_positive_votes, agg_negative_votes\
+					FROM article_votes\
+					LEFT JOIN object_votes\
+					ON article_votes.legacy_id = object_votes.legacy_id\
+					WHERE article_id = '" + articleId + "';"
+		}
+
+		init.connection.query(query(articleId), function(err, rows, fields) {
+				if (err) throw res.json({"error": err})
+				res.json({'Success': rows})
+	  		});
 
 	},
 

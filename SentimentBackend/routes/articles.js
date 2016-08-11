@@ -17,7 +17,7 @@ router.put('/vote/:articleID', function(req, res, next){
 
 router.get('/getVoteResults/:articleID', function(req, res, next){
 	var articleIDe = req.params.articleID;
-    article.voteResults(articleIDe);
+    article.voteResults(res, articleIDe);
 });
 
 module.exports = router;
