@@ -20,4 +20,12 @@ router.get('/getVoteResults/:articleID', function(req, res, next){
     article.voteResults(res, articleIDe);
 });
 
+router.get('/getTopSentiment/:feeling/:count', function(req, res, next){
+	var count = req.params.count;
+	var feeling = req.params.feeling;
+	//var dateRange = req.body.dateRange;
+    article.topSentiment(res, count, feeling);
+});
+
+
 module.exports = router;

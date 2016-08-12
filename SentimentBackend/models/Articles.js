@@ -91,15 +91,45 @@ ArticleModel = {
 	  		});
 		});
 		res.json({'Success': votePlaced + " on " + legacyId});
+	},
+
+	topSentiment: function(res, count, feeling){
+		function queryHappy(count){
+			return "SELECT legacy_id, SUM(positive_votes) aggPos, SUM(negative_votes) aggNeg\
+					FROM article_votes\
+					WHERE date(date_time) = current_date()\
+					GROUP BY legacy_id\
+					ORDER BY aggPos DESC\
+					LIMIT " + count +";"
+		}
+
+		function querySad(count){
+			return "SELECT legacy_id, SUM(positive_votes) aggPos, SUM(negative_votes) aggNeg\
+					FROM article_votes\
+					WHERE date(date_time) = current_date()\
+					GROUP BY legacy_id\
+					ORDER BY aggNeg DESC\
+					LIMIT " + count +";"
+		}
+		if(feeling == "Happy")
+		{
+			init.connection.query(queryHappy(count), function(err, rows, fields) {
+					if (err) throw res.json({"error": err})
+					res.json({'Success': rows})
+		  		});
+		}
+		else if(feeling == "Sad")
+		{
+			init.connection.query(querySad(count), function(err, rows, fields) {
+					if (err) throw res.json({"error": err})
+					res.json({'Success': rows})
+		  		});
+		}
+
 	}
 }
 
 module.exports.ArticleModel = ArticleModel;
-
-
-
-
-
 
 
 
