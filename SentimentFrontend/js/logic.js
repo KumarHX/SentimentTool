@@ -92,7 +92,7 @@ $(function(){
 
     articleArray.forEach(function(articleObj, ind){
       var name = "No Man's Sky gets Game of the Year",
-          sentiment = "23",
+          sentiment = "75",
           votes = "450",
           imageUrl = "images/sky.jpg",
           trendClass = sentiment >= 50 ? 'happy' : 'sad',
