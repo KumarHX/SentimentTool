@@ -1,137 +1,142 @@
-var express = require('express');
+/*jslint node:true */
+var express = require("express");
 var router = express.Router();
-var init = require("./init")
+var init = require("./init");
 
-ArticleModel = {
-
-	voteResults: function(res, articleId){
-		function query(articleId){
-			return "SELECT positive_votes, negative_votes, agg_positive_votes, agg_negative_votes\
-					FROM article_votes\
-					LEFT JOIN object_votes\
-					ON article_votes.legacy_id = object_votes.legacy_id\
-					WHERE article_id = '" + articleId + "';"
+var ArticleModel = {
+    
+	voteResults: function (res, articleId) {
+        "use strict";
+		function query() {
+			return `SELECT positive_votes, negative_votes, agg_positive_votes, agg_negative_votes
+					FROM article_votes
+					LEFT JOIN object_votes
+					ON article_votes.legacy_id = object_votes.legacy_id
+					WHERE article_id = "${articleId}"`
 		}
 
-		init.connection.query(query(articleId), function(err, rows, fields) {
-				if (err) throw res.json({"error": err})
-				res.json({'Success': rows})
-	  		});
-
+		init.connection.query(query(articleId), function (err, rows, fields) {
+				if (err) {
+					throw res.json({"error": err});
+				}
+				res.json({'VoteResults': rows});
+	  	});
 	},
-
-	voteHandler: function(res, articleId, votePlaced, dateTime, legacyId, objectType, objectName, objectImage, articleURL, articleTitle, articleImage){
-		function firstQuery(articleId, dateTime, legacyId, value, articleURL, articleTitle, articleImage){
-			var first = "";
-			if(value == "Happy")
-			{
-				first = firstHappyQuery(articleId, dateTime, legacyId, articleURL, articleTitle, articleImage);
+    
+	voteHandler: function (res, article, ignObject, vote) {
+        function firstQuery(){
+			switch(vote) {
+				case "Happy":
+					return firstHappyQuery();
+				    break;
+				case "Sad":
+					return firstSadQuery();
+					break;
+				default:
+					console.log("Error in First Query");
+					break;
 			}
-			else if(value == "Sad")
-			{
-				first = firstSadQuery(articleId, dateTime, legacyId, articleURL, articleTitle, articleImage);
+		};
+
+		function secondQuery(){
+			switch(vote) {
+				case "Happy":
+					return secondHappyQuery();
+				case "Sad":
+					return secondSadQuery();
+				default:
+					console.log("Error on Second Query");
 			}
-			return first;
-		}
+		};
 
-		function secondQuery(articleId, value, objectType, objectName, objectImage){
-			var second = "";
-			if(value == "Happy")
-			{
-				second = secondHappyQuery(articleId, objectType, objectName, objectImage);
-			}
-			else if(value == "Sad")
-			{
-				second = secondSadQuery(legacyId);
-			}
-			return second;
-		}
+		function firstHappyQuery() {
+			return `INSERT INTO article_votes
+					(article_id, date_time, positive_votes, negative_votes, legacy_id, article_url, article_title, article_image)
+					VALUES( "${article.id}", "${article.publishDate}", 1, 0, "${article.legacyId}", "${article.url}", "${article.title}", "${article.image}")
+					ON DUPLICATE KEY UPDATE
+					positive_votes = positive_votes + 1;`
+		};
 
-		function firstHappyQuery(articleId, dateTime, legacyId, article_url, article_title, article_image)
-		{
-			return "INSERT INTO article_votes\
-					(article_id, date_time, positive_votes, negative_votes, legacy_id, article_url, article_title, article_image)\
-					VALUES( '" + articleId + "', '" + dateTime + "', 1, 0, '" + legacyId + "', '" + article_url + "', '" + article_title + "', '" + article_image + "')\
-					ON DUPLICATE KEY UPDATE\
-					positive_votes = positive_votes + 1;"
-		}
+        function firstSadQuery() {
+			return `INSERT INTO article_votes
+					(article_id, date_time, positive_votes, negative_votes, legacy_id, article_url, article_title, article_image)
+					VALUES( "${article.id}", "${article.publishDate}", 1, 0, "${article.legacyId}", "${article.url}", "${article.title}", "${article.image}")
+					ON DUPLICATE KEY UPDATE
+					negative_votes = negative_votes + 1;`
+		};
 
-		function firstSadQuery(articleId, dateTime, legacyId, article_url, article_title, article_image)
-		{
-			return "INSERT INTO article_votes\
-					(article_id, date_time, positive_votes, negative_votes, legacy_id, article_url, article_title, article_image)\
-					VALUES( '" + articleId + "', '" + dateTime + "', 1, 0, '" + legacyId + "', '" + article_url + "', '" + article_title + "', '" + article_image + "')\
-					ON DUPLICATE KEY UPDATE\
-					negative_votes = negative_votes + 1;"
-		}
+		function secondHappyQuery() {
+			return `INSERT INTO object_votes
+					(legacy_id, agg_positive_votes, agg_negative_votes, object_type, object_name, object_image)
+					VALUES( "${ignObject.legacyId}", 1, 0, "${ignObject.type}", "${ignObject.name}", "${ignObject.image}")
+					ON DUPLICATE KEY UPDATE
+					agg_positive_votes = agg_positive_votes + 1;`
+		};
 
-		function secondHappyQuery(articleId, objectType, objectName, objectImage)
-		{
-			return "INSERT INTO object_votes\
-					(legacy_id, agg_positive_votes, agg_negative_votes, object_type, object_name, object_image)\
-					VALUES( '" + articleId + "', 1, 0, '" + objectType + "', '" + objectName + "', '" + objectImage + "')\
-					ON DUPLICATE KEY UPDATE\
-					agg_positive_votes = agg_positive_votes + 1;"
-		}
+		function secondSadQuery() {
+			return `INSERT INTO object_votes
+					(legacy_id, agg_positive_votes, agg_negative_votes, object_type, object_name, object_image)
+					VALUES( "${ignObject.legacyId}", 1, 0, "${ignObject.type}", "${ignObject.name}", "${ignObject.image}"
+					ON DUPLICATE KEY UPDATE
+					agg_negative_votes = agg_negative_votes + 1;`
+		};
 
-		function secondSadQuery(legacyId)
-		{
-			return "INSERT INTO object_votes\
-					(legacy_id, agg_positive_votes, agg_negative_votes, object_type, object_name, object_image)\
-					VALUES( '" + articleId + "', 1, 0, '" + objectType + "', '" + objectName + "', '" + objectImage + "')\
-					ON DUPLICATE KEY UPDATE\
-					agg_negative_votes = agg_negative_votes + 1;"
-		}
-
-		init.connection.query(firstQuery(articleId, dateTime, legacyId, votePlaced, articleURL, articleTitle, articleImage), function(err, rows, fields) {
+		init.connection.query(firstQuery(), function(err, rows, fields) {
 	  		if (err) throw res.json({"error": err})
-	  		init.connection.query(secondQuery(articleId, votePlaced, objectType, objectName, objectImage), function(err, rows, fields) {
+	  		init.connection.query(secondQuery(), function(err, rows, fields) {
 				if (err) throw res.json({"error": err})
 	  		});
 		});
-		res.json({'Success': votePlaced + " on " + legacyId});
+		res.json({'Success': "votePlaced on " + ignObject.legacyId});
 	},
 
-	topSentiment: function(res, count, feeling){
-		function queryHappy(count){
-			return "SELECT legacy_id, SUM(positive_votes) aggPos, SUM(negative_votes) aggNeg\
-					FROM article_votes\
-					WHERE date(date_time) = current_date()\
-					GROUP BY legacy_id\
-					ORDER BY aggPos DESC\
-					LIMIT " + count +";"
+	topSentiment: function(res, count, vote){
+		function queryHappy(){
+			return `SELECT legacy_id, SUM(positive_votes) aggPos, SUM(negative_votes) aggNeg
+					FROM article_votes
+					WHERE date(date_time) = current_date()
+					GROUP BY legacy_id
+					ORDER BY aggPos DESC
+					LIMIT ${count};`
 		}
 
-		function querySad(count){
-			return "SELECT legacy_id, SUM(positive_votes) aggPos, SUM(negative_votes) aggNeg\
-					FROM article_votes\
-					WHERE date(date_time) = current_date()\
-					GROUP BY legacy_id\
-					ORDER BY aggNeg DESC\
-					LIMIT " + count +";"
+		function querySad(){
+			return `SELECT legacy_id, SUM(positive_votes) aggPos, SUM(negative_votes) aggNeg
+					FROM article_votes
+					WHERE date(date_time) = current_date()
+					GROUP BY legacy_id
+					ORDER BY aggNeg DESC
+					LIMIT ${count};`
 		}
-		if(feeling == "Happy")
-		{
-			init.connection.query(queryHappy(count), function(err, rows, fields) {
+
+		switch(vote) {
+			case "Happy":
+				init.connection.query(queryHappy(), function(err, rows, fields) {
+					if (err) throw res.json({"error": err})
+					res.json({'Success': rows})
+		  		});
+		  		break;	
+			case "Sad":
+				init.connection.query(querySad(), function(err, rows, fields) {
 					if (err) throw res.json({"error": err})
 					res.json({'Success': rows})
 		  		});
 		}
-		else if(feeling == "Sad")
-		{
-			init.connection.query(querySad(count), function(err, rows, fields) {
-					if (err) throw res.json({"error": err})
-					res.json({'Success': rows})
-		  		});
-		}
-
 	},
 
+<<<<<<< HEAD
 	graphInfo: function(res, legacyID, objectTitle, coverArt){
 		function query(legacyID){
 			return "SELECT agg_positive_votes, agg_negative_votes\
 					FROM object_votes\
 					WHERE legacy_id = '" + legacyID + "';"
+=======
+	graphInfo: function(res, legacyID){
+		function query(){
+			return `SELECT agg_positive_votes, agg_negative_votes
+					FROM object_votes
+					WHERE legacy_id = "${legacyID}";`
+>>>>>>> 033d8b072c38658380fcd77a76bd4da02db5ea61
 
 		}
 
@@ -139,7 +144,7 @@ ArticleModel = {
 			return Math.floor(posVotes / (posVotes+negVotes)*100);
 		}
 
-		init.connection.query(query(legacyID), function(err, rows, fields) {
+		init.connection.query(query(), function(err, rows, fields) {
 				if (err) throw res.json({"error": err})
 				var sentimentVal = getSentimentPercent(rows[0].agg_positive_votes, rows[0].agg_negative_votes);
 				console.log(sentimentVal)
@@ -150,15 +155,3 @@ ArticleModel = {
 }
 
 module.exports.ArticleModel = ArticleModel;
-
-
-
-
-
-
-
-
-
-
-
-
