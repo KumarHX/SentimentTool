@@ -127,7 +127,7 @@ ArticleModel = {
 
 	},
 
-	graphInfo: function(res, legacyID){
+	graphInfo: function(res, legacyID, objectTitle, coverArt){
 		function query(legacyID){
 			return "SELECT agg_positive_votes, agg_negative_votes\
 					FROM object_votes\
@@ -143,7 +143,7 @@ ArticleModel = {
 				if (err) throw res.json({"error": err})
 				var sentimentVal = getSentimentPercent(rows[0].agg_positive_votes, rows[0].agg_negative_votes);
 				console.log(sentimentVal)
-				res.json({'sentiment Value': sentimentVal})
+				res.json({'overallSentiment': sentimentVal, 'objectTitle': objectTitle, 'coverArt': coverArt})
 	  		});
 	}
 
