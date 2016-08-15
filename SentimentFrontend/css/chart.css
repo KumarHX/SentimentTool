@@ -150,16 +150,23 @@ a {
 }
 .articleCard {
     border-radius: 2px;
-    width: 320px;
-    height: 180px;
+    width: 308px;
+    height: 173px;
     margin: 0px 0px 10px 10px;
     background-repeat: repeat, no-repeat;
-    background-size: auto, contain;
+    background-size: cover;
     animation-name: slide-in;
     animation-iteration-count: 1;
-    animation-duration: .3s;
+    animation-duration: 1s;
     text-align: center;
     font-size: 26px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.articleCard:hover {
+	transform: scale(1.15);
+	z-index: 2;
+	box-shadow: 0px 0px 8px black;
 }
 
 .article-stuff-container {
@@ -171,12 +178,13 @@ a {
 	margin: 5px 5px 0px 5px;
 	display: inline-block;
 	text-align: center;
-}
-
-.rating {
 	text-shadow: black 0px 0px 4px;
 	font-size: 20px;
 	color: #ffffff;
+}
+
+.percent {
+	margin: 5px 0px;
 }
 
 .happy .percent:after, .sad .percent:after {
@@ -186,7 +194,7 @@ a {
     height: 35px;
     width: 35px;
     left:10px;
-    top: 5px;
+    top: 10px;
 }
 
 .rating.happy .percent:after {
@@ -205,6 +213,7 @@ a {
 }
 
 @keyframes slide-in {
-	0% {margin-left: 50px;}
-	100% {margin-left: 5px;}
+	0% {opacity: 0; margin-left: 100px;}
+	50%{margin-left: 0px;}
+	100% {opacity: 1;}
 }
