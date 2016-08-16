@@ -122,18 +122,15 @@ var ArticleModel = {
 		}
 	},
 
-	graphInfo: function(res, legacyID, objectTitle, coverArt){
-		var weekday = new Array(7);
-		weekday[0]=  "Sunday";
-		weekday[1] = "Monday";
-		weekday[2] = "Tuesday";
-		weekday[3] = "Wednesday";
-		weekday[4] = "Thursday";
-		weekday[5] = "Friday";
-		weekday[6] = "Saturday";
-
-		function query(){
-			return `SELECT agg_positive_votes, agg_negative_votes
+	graphInfo: function(res, legacyID){
+        var jsonObj = {'dataPoints' : []};
+        function respondData(){
+            console.log("Responding with data");
+            res.json(jsonObj);
+        }
+        
+		function objectQuery(){
+			return `SELECT agg_positive_votes, agg_negative_votes, object_image, object_name
 					FROM object_votes
 					WHERE legacy_id = "${legacyID}";`
 		}
@@ -143,7 +140,7 @@ var ArticleModel = {
  		}
 
 		function queryDataPoints(legacyID){
-			return `SELECT SUM(positive_votes) as posVotes, SUM(negative_votes) as negVotes, date_time
+			return `SELECT SUM(positive_votes) as posVotes, SUM(negative_votes) as negVotes, date_time, dayname(date_time) as day
 					FROM article_votes
 					WHERE date_time >= DATE_ADD(CURDATE(), INTERVAL -7 DAY) AND
 					legacy_id = "${legacyID}"
@@ -156,46 +153,37 @@ var ArticleModel = {
 					legacy_id = "${legacyID}"
 					ORDER BY positive_votes DESC;`
 		}
-		var jsonObj = {'objectTitle:': objectTitle, 'objectCoverArt:': coverArt, 'dataPoints' : []};
-
-		init.connection.query(query(), function(err, rows, fields) {
+        
+		init.connection.query(objectQuery(), function(err, rows, fields) {
 			if (err) throw res.json({"error": err})
-			jsonObj.objectOverallGood = rows[0].agg_positive_votes;
-			jsonObj.objectOverallBad = rows[0].agg_positive_votes;
-		});
-
-		var sentTotal = 0;
-		var dayVal = "";
-		var datetimeVal;
-		init.connection.query(queryDataPoints(legacyID), function(err, rows, fields) {
-			if (err) throw res.json({"error": err})
-			
-			for(var i = 0; i < rows.length; i++)
-			{
-				var dataPoint = {'articles': []};
-				sentTotal = getSentimentPercent(rows[i].posVotes, rows[i].negVotes);
-				dayVal = weekday[rows[i].date_time.getDay()];
-				datetimeVal = new Date((rows[i].date_time + "").replace(/-/g,"/"));
-				datetimeVal = datetimeVal.toISOString();
-				dataPoint.day = dayVal;
-				dataPoint.overall = sentTotal;
-				init.connection.query(queryArticleInfo(legacyID, datetimeVal), function(err, rows, fields) {
-					if (err) throw res.json({"error": err})
-					for(var i = 0; i < rows.length; i++)
-					{
-						var articleObj = {};
-						articleObj.name = rows[i].article_title;
-						articleObj.image = rows[i].article_image;
-						articleObj.sentiment = getSentimentPercent(rows[i].positive_votes, rows[i].negative_votes);
-						articleObj.totalVotes = rows[i].positive_votes + rows[i].negative_votes;
-						dataPoint.articles.push(articleObj);
-					}
-				});
-				jsonObj.dataPoints.push(dataPoint);
-			}
-			console.log("Your whole object");
-            console.log(jsonObj);
-			res.json(jsonObj);
+            jsonObj.objectOverallGood = rows[0].agg_positive_votes;
+            jsonObj.objectOverallBad = rows[0].agg_positive_votes;
+            jsonObj.objectCoverArt = rows[0].object_image;
+            jsonObj.objectTitle = rows[0].object_name;
+            init.connection.query(queryDataPoints(legacyID), function(err, rows, fields) {
+                if (err) throw res.json({"error": err})
+                for(var i = 0; i < rows.length; i++) {
+                    var dataPoint = {'articles': []},
+                        datetimeVal = new Date((rows[i].date_time + "").replace(/-/g,"/")),
+                        datetimeVal = datetimeVal.toISOString();
+                    dataPoint.day = rows[i].day;
+                    dataPoint.overall = getSentimentPercent(rows[i].posVotes, rows[i].negVotes);
+                    init.connection.query(queryArticleInfo(legacyID, datetimeVal), function(err, rows, fields) {
+                        
+                        if (err) throw res.json({"error": err})
+                        for(var j = 0; j < rows.length; j++){
+                            var articleObj = {};
+                            articleObj.name = rows[j].article_title;
+                            articleObj.image = rows[j].article_image;
+                            articleObj.sentiment = getSentimentPercent(rows[j].positive_votes, rows[j].negative_votes);
+                            articleObj.totalVotes = rows[j].positive_votes + rows[j].negative_votes;
+                            dataPoint.articles.push(articleObj);
+                        }
+                        respondData();
+                    });
+                    jsonObj.dataPoints.push(dataPoint);
+                }
+            });
 		});
 	}
 
