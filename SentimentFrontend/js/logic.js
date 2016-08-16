@@ -58,14 +58,15 @@ $(function(){
         $('.loader').fadeOut('200');
         $('.loadingScreen').fadeOut('600');
 
-
+    console.log("Here are your data points");
+        console.log(data.dataPoints);
     var chartData = {
         labels: data.dataPoints.map(function(point){
           return point.day;
         }),
         datasets: [
             {
-                label: 'Sentiment Data',
+                label: 'Sentiment Trend',
                 fill: false,
                 lineTension: 0.1,
                 backgroundColor: "#FFF",
@@ -91,6 +92,8 @@ $(function(){
             }
         ]
     }
+    console.log("This is chart data");
+    console.log(chartData);
     var myLineChart = new Chart(ctx, {
         type: 'line',
         data: chartData

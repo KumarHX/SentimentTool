@@ -147,7 +147,7 @@ var ArticleModel = {
 					FROM article_votes
 					WHERE date_time >= DATE_ADD(CURDATE(), INTERVAL -14 DAY) AND
 					legacy_id = "${legacyID}"
-					GROUP BY date(date_time)`
+					GROUP BY date(date_time);`
 		}
 
 		function queryArticleInfo(legacyID, datetime){
