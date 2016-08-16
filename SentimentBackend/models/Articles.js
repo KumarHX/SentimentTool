@@ -123,7 +123,7 @@ var ArticleModel = {
 	},
 
 	graphInfo: function(res, legacyID){
-        var jsonObj = {'dataPoints' : []};
+        var jsonObj = {'dataPoints' : [], 'dateCollection': []};
         function respondData(){
             console.log("Responding with data");
             res.json(jsonObj);
@@ -161,7 +161,6 @@ var ArticleModel = {
             jsonObj.objectCoverArt = rows[0].object_image;
             jsonObj.objectTitle = rows[0].object_name;
             buildDataPointObjects(function(){
-                
                 // This is horrible and needs to be fixed
                 setTimeout(function(){
                     respondData();
@@ -174,31 +173,33 @@ var ArticleModel = {
         function buildDataPointObjects(callback){
             init.connection.query(queryDataPoints(legacyID), function(err, dataPointRows, fields) {
                 if (err) throw res.json({"error": err})
-                console.log("Collection of Data Points");
-                console.log(dataPointRows);
                 for(var i = 0; i < dataPointRows.length; i++) {
                     var dataPoint = {'articles': []},
                         datetimeVal = new Date((dataPointRows[i].date_time + "").replace(/-/g,"/")),
                         datetimeVal = datetimeVal.toISOString();
-                    console.log(`This day is ${dataPointRows[i].day}`);
+                    jsonObj.dateCollection.push(datetimeVal);
                     dataPoint.day = dataPointRows[i].day;
                     dataPoint.overall = getSentimentPercent(dataPointRows[i].posVotes, dataPointRows[i].negVotes);
-                    init.connection.query(queryArticleInfo(legacyID, datetimeVal), function(err, articleRows, fields) {
-                        if (err) throw res.json({"error": err})
-                        for(var j = 0; j < articleRows.length; j++){
-                            var articleObj = {};
-                            articleObj.name = articleRows[j].article_title;
-                            articleObj.image = articleRows[j].article_image;
-                            articleObj.sentiment = getSentimentPercent(articleRows[j].positive_votes, articleRows[j].negative_votes),
-                            articleObj.url = articleRows[j].article_url;
-                            articleObj.totalVotes = articleRows[j].positive_votes + articleRows[j].negative_votes;
-                            dataPoint.articles.push(articleObj);
-                        }
-                    }); 
                     jsonObj.dataPoints.push(dataPoint);
                 }
+                jsonObj.dateCollection.forEach(buildArticles);
             });
             callback();
+        }
+        
+        function buildArticles(item, index, arr){
+            init.connection.query(queryArticleInfo(legacyID, item), function(err, articleRows, fields) {
+                if (err) throw res.json({"error": err})
+                for(var j = 0; j < articleRows.length; j++){
+                    var articleObj = {};
+                    articleObj.name = articleRows[j].article_title;
+                    articleObj.image = articleRows[j].article_image;
+                    articleObj.sentiment = getSentimentPercent(articleRows[j].positive_votes, articleRows[j].negative_votes),
+                    articleObj.url = articleRows[j].article_url;
+                    articleObj.totalVotes = articleRows[j].positive_votes + articleRows[j].negative_votes;
+                    jsonObj.dataPoints[index].articles.push(articleObj);
+                }
+            }); 
         }
     }
 

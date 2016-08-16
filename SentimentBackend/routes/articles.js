@@ -25,12 +25,6 @@ router.put('/vote/:articleID', function (req, res, next) {
 		image: req.body.objectImage
 	},
     vote = req.body.sentiment;
-    
-    console.log("Article Object:");
-    console.log(articleObject);
-    console.log("IGN Object");
-    console.log(ignObject);
-    
     article.voteHandler(res, articleObject, ignObject, vote);
 });
 
