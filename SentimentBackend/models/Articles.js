@@ -28,12 +28,10 @@ var ArticleModel = {
 			switch(vote) {
 				case "Happy":
 					return firstHappyQuery();
-				    break;
 				case "Sad":
 					return firstSadQuery();
-					break;
 				default:
-					console.log("Error in First Query");
+					console.log("Vote does not match a valid emotion");
 					break;
 			}
 		};
@@ -45,7 +43,7 @@ var ArticleModel = {
 				case "Sad":
 					return secondSadQuery();
 				default:
-					console.log("Error on Second Query");
+					console.log("Vote does not match a valid emotion");
 			}
 		};
 
@@ -60,7 +58,7 @@ var ArticleModel = {
         function firstSadQuery() {
 			return `INSERT INTO article_votes
 					(article_id, date_time, positive_votes, negative_votes, legacy_id, article_url, article_title, article_image)
-					VALUES( "${article.id}", "${article.publishDate}", 1, 0, "${article.legacyId}", "${article.url}", "${article.title}", "${article.image}")
+					VALUES( "${article.id}", "${article.publishDate}", 0, 1, "${article.legacyId}", "${article.url}", "${article.title}", "${article.image}")
 					ON DUPLICATE KEY UPDATE
 					negative_votes = negative_votes + 1;`
 		};
@@ -76,7 +74,7 @@ var ArticleModel = {
 		function secondSadQuery() {
 			return `INSERT INTO object_votes
 					(legacy_id, agg_positive_votes, agg_negative_votes, object_type, object_name, object_image)
-					VALUES( "${ignObject.legacyId}", 1, 0, "${ignObject.type}", "${ignObject.name}", "${ignObject.image}"
+					VALUES( "${ignObject.legacyId}", 0, 1, "${ignObject.type}", "${ignObject.name}", "${ignObject.image}")
 					ON DUPLICATE KEY UPDATE
 					agg_negative_votes = agg_negative_votes + 1;`
 		};

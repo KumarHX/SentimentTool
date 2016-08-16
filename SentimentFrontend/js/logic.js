@@ -14,7 +14,14 @@ $(function(){
       {
         day: 'Monday',
         overall: 78,
-        articles: [{name: "some cool article"}, {name: "some cool article"}, {name: "some cool article"}]
+        articles: [{
+          name: "some cool article"
+          url:
+          image:
+          sentiment:
+          totalVotes:
+
+          }, {name: "some cool article"}, {name: "some cool article"}]
       },{
         day: 'Tuesday',
         overall: 12,
@@ -99,22 +106,17 @@ $(function(){
             })
 
         articleArray.forEach(function(articleObj, ind){
-          var name = "No Man's Sky gets Game of the Year",
-              sentiment = "75",
-              votes = "450",
-              imageUrl = "images/sky.jpg",
-              articleUrl = 'http://www.google.com',
-              trendClass = sentiment >= 50 ? 'happy' : 'sad',
-              element= '<div class="articleCard"><a href="' + articleUrl +'" target="#blank">\
-                        <h3>' + name + '</h3>\
+              var trendClass = articleObj.sentiment >= 50 ? 'happy' : 'sad',
+              element= '<div class="articleCard"><a href="' + articleObj.url +'" target="#blank">\
+                        <h3>' + articleObj.name + '</h3>\
                             <div class="article-stuff-container">\
-                                <div class="rating ' + trendClass + '"><p class="percent">' + sentiment + '%</p><p class="numVotes">' + votes + ' votes</p></div>\
+                                <div class="rating ' + trendClass + '"><p class="percent">' + articleObj.sentiment + '%</p><p class="numVotes">' + votes + ' votes</p></div>\
                              </div>\
                             </a>\
                           </div>';
           setTimeout(function(){
             $('.articleCard-container').append(element)
-            $('.articleCard:last-child').css('background-image', 'url("images/black.png"), url(' + imageUrl + ')')
+            $('.articleCard:last-child').css('background-image', 'url("images/black.png"), url(' + articleObj.image + ')')
 
           }, (ind + 1) * 500)
         })
