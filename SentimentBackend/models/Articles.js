@@ -122,24 +122,81 @@ var ArticleModel = {
 		}
 	},
 
-	graphInfo: function(res, legacyID){
+	graphInfo: function(res, legacyID, objectTitle, coverArt){
+		var weekday = new Array(7);
+		weekday[0]=  "Sunday";
+		weekday[1] = "Monday";
+		weekday[2] = "Tuesday";
+		weekday[3] = "Wednesday";
+		weekday[4] = "Thursday";
+		weekday[5] = "Friday";
+		weekday[6] = "Saturday";
+
 		function query(){
 			return `SELECT agg_positive_votes, agg_negative_votes
 					FROM object_votes
 					WHERE legacy_id = "${legacyID}";`
-
 		}
 
 		function getSentimentPercent(posVotes, negVotes){
-			return Math.floor(posVotes / (posVotes+negVotes)*100);
+ 			return Math.floor(posVotes / (posVotes+negVotes)*100);
+ 		}
+
+		function queryDataPoints(legacyID){
+			return `SELECT SUM(positive_votes) as posVotes, SUM(negative_votes) as negVotes, date_time
+					FROM article_votes
+					WHERE date_time >= DATE_ADD(CURDATE(), INTERVAL -7 DAY) AND
+					legacy_id = "${legacyID}"
+					GROUP BY date(date_time)`
 		}
 
+		function queryArticleInfo(legacyID, datetime){
+			return `SELECT article_title, article_url, article_image, positive_votes, negative_votes FROM article_votes
+					WHERE date(date_time) = date("${datetime}") AND
+					legacy_id = "${legacyID}"
+					ORDER BY positive_votes DESC;`
+		}
+		var jsonObj = {'objectTitle:': objectTitle, 'objectCoverArt:': coverArt, 'dataPoints' : []};
+
 		init.connection.query(query(), function(err, rows, fields) {
-				if (err) throw res.json({"error": err})
-				var sentimentVal = getSentimentPercent(rows[0].agg_positive_votes, rows[0].agg_negative_votes);
-				console.log(sentimentVal)
-				res.json({'sentiment Value': sentimentVal})
-	  		});
+			if (err) throw res.json({"error": err})
+			jsonObj.objectOverallGood = rows[0].agg_positive_votes;
+			jsonObj.objectOverallBad = rows[0].agg_positive_votes;
+		});
+
+		var sentTotal = 0;
+		var dayVal = "";
+		var datetimeVal;
+		init.connection.query(queryDataPoints(legacyID), function(err, rows, fields) {
+			if (err) throw res.json({"error": err})
+			
+			for(var i = 0; i < rows.length; i++)
+			{
+				var dataPoint = {'articles': []};
+				sentTotal = getSentimentPercent(rows[i].posVotes, rows[i].negVotes);
+				dayVal = weekday[rows[i].date_time.getDay()];
+				datetimeVal = new Date((rows[i].date_time + "").replace(/-/g,"/"));
+				datetimeVal = datetimeVal.toISOString();
+				dataPoint.day = dayVal;
+				dataPoint.overall = sentTotal;
+				init.connection.query(queryArticleInfo(legacyID, datetimeVal), function(err, rows, fields) {
+					if (err) throw res.json({"error": err})
+					for(var i = 0; i < rows.length; i++)
+					{
+						var articleObj = {};
+						articleObj.name = rows[i].article_title;
+						articleObj.image = rows[i].article_image;
+						articleObj.sentiment = getSentimentPercent(rows[i].positive_votes, rows[i].negative_votes);
+						articleObj.totalVotes = rows[i].positive_votes + rows[i].negative_votes;
+						dataPoint.articles.push(articleObj);
+					}
+				});
+				jsonObj.dataPoints.push(dataPoint);
+			}
+			console.log("Your whole object");
+            console.log(jsonObj);
+			res.json(jsonObj);
+		});
 	}
 
 }

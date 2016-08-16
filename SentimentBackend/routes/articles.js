@@ -47,10 +47,12 @@ router.get('/getTopSentiment/:feeling/:count', function (req, res, next) {
     article.topSentiment(res, count, feeling);
 });
 
-router.get('/graphData/:legacyID', function (req, res, next) {
+router.get('/graphData/:legacyID/:objectTitle/:coverArt', function (req, res, next) {
     "use strict";
 	var legacyID = req.params.legacyID;
-    article.graphInfo(res, legacyID);
+	var objectTitle = req.params.objectTitle;
+	var coverArt = req.params.coverArt;
+    article.graphInfo(res, legacyID, objectTitle, coverArt);
 });
 
 
