@@ -130,9 +130,12 @@ var ArticleModel = {
         }
         
 		function objectQuery(){
-			return `SELECT agg_positive_votes, agg_negative_votes, object_image, object_name
-					FROM object_votes
-					WHERE legacy_id = "${legacyID}";`
+			return `SELECT object_name, object_image, SUM(positive_votes) as agg_positive_votes, SUM(negative_votes) as agg_negative_votes
+            FROM object_votes
+            INNER JOIN article_votes
+            ON object_votes.legacy_id = article_votes.legacy_id
+            WHERE article_votes.legacy_id = "${legacyID}"
+            GROUP BY article_votes.legacy_id;`
 		}
 
 		function getSentimentPercent(posVotes, negVotes){
