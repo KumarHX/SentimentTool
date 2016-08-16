@@ -21,6 +21,28 @@ body{
 	background-color:#BF1313;
 }
 
+.loadingScreen{
+	position: fixed;
+	width:100%;
+	height:100%;
+	background-color: white;
+	z-index: 10;
+}
+
+.loader{
+	position: absolute;
+	top:50%;
+	left:50%;
+	margin-top: -50px;
+	margin-left: -50px;
+	width:100px;
+	height: 100px;
+
+	animation-name: heartbeat;
+    animation-iteration-count: infinite;
+    animation-duration: 1s;
+}
+
 h2{
 	font-size: 15px;
 	text-align: center;
@@ -100,7 +122,7 @@ h3{
 	animation-name: heartbeat;
     animation-iteration-count: 2;
     animation-duration: 1s;
-    animation-delay: 2s;
+    animation-delay: 5s;
 }
 
 .statItem.bad:before{

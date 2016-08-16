@@ -55,6 +55,9 @@ $(function(){
         $('.statItem.good p').html(data.objectOverallGood);
         $('.statItem.bad p').html(data.objectOverallBad);
 
+        $('.loader').fadeOut('200');
+        $('.loadingScreen').fadeOut('600');
+
 
     var chartData = {
         labels: data.dataPoints.map(function(point){

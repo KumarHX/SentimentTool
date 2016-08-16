@@ -142,7 +142,7 @@ var ArticleModel = {
 		function queryDataPoints(legacyID){
 			return `SELECT SUM(positive_votes) as posVotes, SUM(negative_votes) as negVotes, date_time, dayname(date_time) as day
 					FROM article_votes
-					WHERE date_time >= DATE_ADD(CURDATE(), INTERVAL -7 DAY) AND
+					WHERE date_time >= DATE_ADD(CURDATE(), INTERVAL -14 DAY) AND
 					legacy_id = "${legacyID}"
 					GROUP BY date(date_time)`
 		}
@@ -157,14 +157,14 @@ var ArticleModel = {
 		init.connection.query(objectQuery(), function(err, rows, fields) {
 			if (err) throw res.json({"error": err})
             jsonObj.objectOverallGood = rows[0].agg_positive_votes;
-            jsonObj.objectOverallBad = rows[0].agg_positive_votes;
+            jsonObj.objectOverallBad = rows[0].agg_negative_votes;
             jsonObj.objectCoverArt = rows[0].object_image;
             jsonObj.objectTitle = rows[0].object_name;
             buildDataPointObjects(function(){
                 // This is horrible and needs to be fixed
                 setTimeout(function(){
                     respondData();
-                }, 4000);
+                }, 2000);
                 // Response will not wait for all data otherwise
                 
             });
