@@ -194,7 +194,7 @@ a {
     height: 35px;
     width: 35px;
     left:10px;
-    top: 10px;
+    top: 3px;
 }
 
 .rating.happy .percent:after {
@@ -207,7 +207,7 @@ a {
 	background-size: cover;
 }
 
-.rating.sad .percent{
+.rating.sad .percent, .rating.happy .percent{
 	font-size: 40px;
 	margin: 5px;
 }
